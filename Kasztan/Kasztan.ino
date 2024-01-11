@@ -3,20 +3,23 @@
 #include <ESP8266WebServer.h>
 
 #define dhtPIN 2 //D4
+#define fotoPIN A0
 
 #define dhtTYPE DHT11
 
-const char *ssid = "UPC1263944";
-const char *password = "AeaAbednck5p";
+const char *ssid = "UPC913DBEC";
+const char *password = "tC4jruczkpty";
 
 float temperature;
 float humidity;
+float light;
 
 DHT dht(dhtPIN, dhtTYPE);
 WiFiClient client;
 ESP8266WebServer server(80);   
 
 void setup() {
+
   Serial.begin(9600);
   dht.begin();
   connectToWiFi();
@@ -68,14 +71,15 @@ void connectToWiFi() {
 void handle_OnConnect() {
   temperature = dht.readTemperature();
   humidity = dht.readHumidity();
-  server.send(200, "text/html", SendHTML(temperature,humidity)); 
+  light = analogRead(fotoPIN);
+  server.send(200, "text/html", SendHTML(temperature,humidity, light)); 
 }
 
 void handle_NotFound(){
   server.send(404, "text/plain", "Not found");
 }
 
-String SendHTML(float temperature,float humidity){
+String SendHTML(float temperature,float humidity, float light){
   String ptr = "<!DOCTYPE html> <html>\n";
   ptr +="<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, user-scalable=no\">\n";
   ptr +="<title>ESP8266 Weather Station</title>\n";
@@ -93,8 +97,9 @@ String SendHTML(float temperature,float humidity){
   ptr +="<p>Humidity: ";
   ptr +=humidity;
   ptr +="%</p>";
-  ptr +="m</p>";
-  ptr+="<p>Julia to mega slodziak, slay!";
+  ptr +="<p>Light: ";
+  ptr +=light;
+  ptr+="<p>by Robert Zubek";
   ptr +="</div>\n";
   ptr +="</body>\n";
   ptr +="</html>\n";
