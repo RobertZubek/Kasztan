@@ -63,7 +63,6 @@ void loop() {
         String payload = http1.getString();
         Serial.println(httpCode);
         Serial.println(payload);
-        Serial.println("inprint");
       }
  
     else {
