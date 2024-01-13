@@ -58,7 +58,6 @@ void loop() {
   server.handleClient();
   http1.begin(client, (endpoint + key).c_str());
   int httpCode = http1.GET();
-  Serial.println("inloop");
   if (httpCode > 0) { 
  
         String payload = http1.getString();
