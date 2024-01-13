@@ -1,6 +1,7 @@
 #include <DHT.h>
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
+#include <ESP8266HTTPClient.h>
 
 #define dhtPIN 2 //D4
 #define fotoPIN A0
@@ -8,10 +9,13 @@
 #define greenPIN 4//D2
 #define bluePIN 5//D1
 
+#define endpoint  "http://api.openweathermap.org/data/2.5/weather?q=Cracow,pl&APPID="
+#define key "13e6fd15ee63796bcf8f4809fb26832b"
+
 #define dhtTYPE DHT11
 
-const char *ssid = "UPC913DBEC";
-const char *password = "tC4jruczkpty";
+const char *ssid = "kompex_9283";
+const char *password = "7rUjaW2J";
 
 float temperature;
 float humidity;
@@ -23,6 +27,7 @@ int blueValue = 128;
 
 DHT dht(dhtPIN, dhtTYPE);
 WiFiClient client;
+HTTPClient http1;
 ESP8266WebServer server(80);   
 
 void setup() {
@@ -30,10 +35,7 @@ void setup() {
   pinMode(redPIN, OUTPUT);
   pinMode(greenPIN, OUTPUT);
   pinMode(bluePIN, OUTPUT);
-/*
-  analogWrite(redPIN, 128);
-  analogWrite(bluePIN, 128);
-  analogWrite(greenPIN, 128);*/
+
 
   Serial.begin(9600);
   dht.begin();
@@ -54,15 +56,21 @@ void setup() {
 
 void loop() {
   server.handleClient();
-  /*
-  delay(1000);
-  float temperature = dht.readTemperature();
-  float humidity = dht.readHumidity();
-
-  Serial.println("Temperature:");
-  Serial.println(temperature);
-  Serial.println("Humidity:");
-  Serial.println(humidity);*/
+  http1.begin(endpoint + key);
+  int httpCode = http1.GET();
+  if (httpCode > 0) { 
+ 
+        String payload = http1.getString();
+        Serial.println(httpCode);
+        Serial.println(payload);
+      }
+ 
+    else {
+      Serial.println("Error on HTTP request");
+    }
+ 
+    http1.end(); 
+  
 }
 
 void connectToWiFi() {
@@ -98,42 +106,42 @@ void handle_OnConnect() {
 
 void handle_IncreaseRed()
 {
-  if (redValue < 255)
+  if (redValue > 11)
     redValue-=10;
   analogWrite(redPIN, redValue);
   server.send(200, "text/html", SendHTML(temperature, humidity, light, redValue, greenValue, blueValue));
 }
 void handle_IncreaseGreen()
 {
-  if (greenValue < 255)
+  if (greenValue > 11)
     greenValue-=10;
   analogWrite(greenPIN, greenValue);
   server.send(200, "text/html", SendHTML(temperature, humidity, light, redValue, greenValue, blueValue));
 }
 void handle_IncreaseBlue()
 {
-  if (blueValue < 255)
+  if (blueValue > 11)
     blueValue-=10;
   analogWrite(bluePIN, blueValue);
   server.send(200, "text/html", SendHTML(temperature, humidity, light, redValue, greenValue, blueValue));
 }
 void handle_DecreaseRed()
 {
-  if (redValue > 0)
+  if (redValue <244)
     redValue+=10;
   analogWrite(redPIN, redValue);
   server.send(200, "text/html", SendHTML(temperature, humidity, light, redValue, greenValue, blueValue));
 }
 void handle_DecreaseGreen()
 {
-  if (greenValue > 0)
+  if (greenValue < 244)
     greenValue+=10;
   analogWrite(greenPIN, greenValue);
   server.send(200, "text/html", SendHTML(temperature, humidity, light, redValue, greenValue, blueValue));
 }
 void handle_DecreaseBlue()
 {
-  if (blueValue > 0)
+  if (blueValue <244)
     blueValue+=10;
   analogWrite(bluePIN, blueValue);
   server.send(200, "text/html", SendHTML(temperature, humidity, light, redValue, greenValue, blueValue));
@@ -179,6 +187,12 @@ String SendHTML(float temperature,float humidity, float light, int red, int gree
   ptr += "<button onclick=\"decreaseColor('Green')\">Decrease Green</button><br>";
   ptr += "<button onclick=\"increaseColor('Blue')\">Increase Blue</button>";
   ptr += "<button onclick=\"decreaseColor('Blue')\">Decrease Blue</button><br>";
+  ptr += "<p>RED: ";
+  ptr += red;
+  ptr += "<p>GREEN: ";
+  ptr += green;
+  ptr += "<p>BLUE: ";
+  ptr += blue;
   ptr += "<p>by Robert Zubek</p>";
   ptr +="</div>\n";
   ptr +="</body>\n";
