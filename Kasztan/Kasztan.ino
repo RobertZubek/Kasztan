@@ -9,7 +9,7 @@
 #define greenPIN 4//D2
 #define bluePIN 5//D1
 
-const String endpoint = "http://api.openweathermap.org/data/2.5/weather?q=Lisbon,pt&APPID=";
+const String endpoint = "http://api.openweathermap.org/data/2.5/weather?q=Krakow,pl&APPID=";
 const String key = "13e6fd15ee63796bcf8f4809fb26832b";
 
 #define dhtTYPE DHT11
