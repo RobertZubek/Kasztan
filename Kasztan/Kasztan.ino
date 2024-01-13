@@ -9,8 +9,8 @@
 #define greenPIN 4//D2
 #define bluePIN 5//D1
 
-#define endpoint  "http://api.openweathermap.org/data/2.5/weather?q=Cracow,pl&APPID="
-#define key "13e6fd15ee63796bcf8f4809fb26832b"
+const String endpoint = "http://api.openweathermap.org/data/2.5/weather?q=Lisbon,pt&APPID=";
+const String key = "13e6fd15ee63796bcf8f4809fb26832b";
 
 #define dhtTYPE DHT11
 
@@ -56,13 +56,15 @@ void setup() {
 
 void loop() {
   server.handleClient();
-  http1.begin(endpoint + key);
+  http1.begin(client, (endpoint + key).c_str());
   int httpCode = http1.GET();
+  Serial.println("inloop");
   if (httpCode > 0) { 
  
         String payload = http1.getString();
         Serial.println(httpCode);
         Serial.println(payload);
+        Serial.println("inprint");
       }
  
     else {
