@@ -5,17 +5,17 @@
 
 #define dhtPIN 2 //D4
 #define fotoPIN A0
-#define redPIN 0//D3
+#define redPIN 5//D3
 #define greenPIN 4//D2
-#define bluePIN 5//D1
+#define bluePIN 0//D1
 
 const String endpoint = "http://api.openweathermap.org/data/2.5/weather?q=Krakow,pl&APPID=";
 const String key = "13e6fd15ee63796bcf8f4809fb26832b";
 
 #define dhtTYPE DHT11
 
-const char *ssid = "kompex_9283";
-const char *password = "7rUjaW2J";
+const char *ssid = "UPC913DBEC";
+const char *password = "tC4jruczkpty";
 
 float temperature;
 float humidity;
@@ -193,6 +193,7 @@ String SendHTML(float temperature,float humidity, float light, int red, int gree
   ptr += green;
   ptr += "<p>BLUE: ";
   ptr += blue;
+  ptr += "<p>kocham Julcie</p>";
   ptr += "<p>by Robert Zubek</p>";
   ptr +="</div>\n";
   ptr +="</body>\n";
