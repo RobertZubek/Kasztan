@@ -173,7 +173,7 @@ String SendHTML(float temperature,float humidity, float light, int red, int gree
          "var xhr = new XMLHttpRequest();"
          "xhr.open('GET', '/decrease' + color, true);"
          "xhr.send();}</script>\n";
-  ptr += "<script>function turnOff{"
+  ptr += "<script>function turnOff(){"
          "var xhr = new XMLHttpRequest();"
          "xhr.open('GET', '/off', true);"
          "xhr.send();}</script>\n";
