@@ -146,6 +146,12 @@ void handle_DecreaseBlue()
   analogWrite(bluePIN, blueValue);
   server.send(200, "text/html", SendHTML(temperature, humidity, light, redValue, greenValue, blueValue));
 }
+void handle_off()
+{
+  redValue=255;
+  greenValue=255;
+  blueValue=255;
+}
 
 void handle_NotFound(){
   server.send(404, "text/plain", "Not found");
@@ -187,6 +193,7 @@ String SendHTML(float temperature,float humidity, float light, int red, int gree
   ptr += "<button onclick=\"decreaseColor('Green')\">Decrease Green</button><br>";
   ptr += "<button onclick=\"increaseColor('Blue')\">Increase Blue</button>";
   ptr += "<button onclick=\"decreaseColor('Blue')\">Decrease Blue</button><br>";
+  ptr += "<button onclick=\"off\">OFF</button><br>";
   ptr += "<p>RED: ";
   ptr += red;
   ptr += "<p>GREEN: ";
