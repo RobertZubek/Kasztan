@@ -173,7 +173,10 @@ String SendHTML(float temperature,float humidity, float light, int red, int gree
          "var xhr = new XMLHttpRequest();"
          "xhr.open('GET', '/decrease' + color, true);"
          "xhr.send();}</script>\n";
-  ptr += "<script>function turnOff"
+  ptr += "<script>function turnOff{"
+         "var xhr = new XMLHttpRequest();"
+         "xhr.open('GET', '/off', true);"
+         "xhr.send();}</script>\n";
   ptr += "<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}\n";
   ptr += "body{margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;}\n";
   ptr += "p {font-size: 24px;color: #444444;margin-bottom: 10px;}\n";
@@ -198,7 +201,7 @@ String SendHTML(float temperature,float humidity, float light, int red, int gree
   ptr += "<button onclick=\"decreaseColor('Green')\">Decrease Green</button><br>";
   ptr += "<button onclick=\"increaseColor('Blue')\">Increase Blue</button>";
   ptr += "<button onclick=\"decreaseColor('Blue')\">Decrease Blue</button><br>";
-  ptr += "<button onclick=\"off\">OFF</button><br>";
+  ptr += "<button onclick=\"turnOff()\">OFF</button><br>";
   ptr += "<p>RED: ";
   ptr += red;
   ptr += "<p>GREEN: ";
