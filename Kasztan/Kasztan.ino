@@ -149,8 +149,12 @@ void handle_DecreaseBlue()
 void handle_off()
 {
   redValue=255;
+  analogWrite(redPIN, redValue);
   greenValue=255;
+  analogWrite(greenPIN, greenValue);
   blueValue=255;
+  analogWrite(bluePIN, blueValue);
+  server.send(200, "text/html", SendHTML(temperature, humidity, light, redValue, greenValue, blueValue));
 }
 
 void handle_NotFound(){
@@ -169,6 +173,7 @@ String SendHTML(float temperature,float humidity, float light, int red, int gree
          "var xhr = new XMLHttpRequest();"
          "xhr.open('GET', '/decrease' + color, true);"
          "xhr.send();}</script>\n";
+  ptr += "<script>function turnOff"
   ptr += "<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}\n";
   ptr += "body{margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;}\n";
   ptr += "p {font-size: 24px;color: #444444;margin-bottom: 10px;}\n";
