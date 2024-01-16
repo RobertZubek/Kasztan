@@ -47,6 +47,7 @@ void setup() {
   server.on("/decreaseGreen", HTTP_GET, handle_DecreaseGreen);
   server.on("/increaseBlue", HTTP_GET, handle_IncreaseBlue);
   server.on("/decreaseBlue", HTTP_GET, handle_DecreaseBlue);
+  server.on("/off", HTTP_GET, handle_off);
   server.onNotFound(handle_NotFound);
 
   server.begin();
