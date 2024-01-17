@@ -2,12 +2,14 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPClient.h>
+#include <LiquidCrystal.h>
 
 #define dhtPIN 2 //D4
 #define fotoPIN A0
 #define redPIN 5//D3
 #define greenPIN 4//D2
 #define bluePIN 0//D1
+#define buttonPIN 1
 
 const String endpoint = "http://api.openweathermap.org/data/2.5/weather?q=Krakow,pl&APPID=";
 const String key = "13e6fd15ee63796bcf8f4809fb26832b";
@@ -21,21 +23,30 @@ float temperature;
 float humidity;
 float light;
 
-int redValue = 128;
-int greenValue = 128;
-int blueValue = 128;
+int redValue = 255;
+int greenValue = 255;
+int blueValue = 255;
+
+volatile uint8_t butClick;
 
 DHT dht(dhtPIN, dhtTYPE);
 WiFiClient client;
 HTTPClient http1;
 ESP8266WebServer server(80);   
+LiquidCrystal lcd(16, 14, 12, 13, 15, 3); 
 
 void setup() {
 
   pinMode(redPIN, OUTPUT);
   pinMode(greenPIN, OUTPUT);
   pinMode(bluePIN, OUTPUT);
+  pinMode(buttonPIN, INPUT_PULLUP);
 
+  //attachInterrupt(digitalPinToInterrupt(buttonPIN), button, FALLING);
+
+  lcd.begin(16,2);
+  
+  
 
   Serial.begin(9600);
   dht.begin();
@@ -51,11 +62,22 @@ void setup() {
   server.onNotFound(handle_NotFound);
 
   server.begin();
-  Serial.println("HTTP server started");
+  //lcd.setCursor(0, 0);
+  //lcd.print("HTTP server started!");
+  delay(300);
 
 }
 
 void loop() {
+  lcd.setCursor(0, 0);
+  lcd.print("IP Address: ");
+  lcd.print(WiFi.localIP()[0]);
+  lcd.print(".");
+  lcd.print(WiFi.localIP()[1]);
+  lcd.print(".");
+  lcd.print(WiFi.localIP()[2]);
+  lcd.print(".");
+  lcd.print(WiFi.localIP()[3]);
   server.handleClient();
   http1.begin(client, (endpoint + key).c_str());
   int httpCode = http1.GET();
@@ -63,6 +85,11 @@ void loop() {
  
         String payload = http1.getString();
         Serial.println(httpCode);
+        lcd.clear();
+        lcd.setCursor(0,0);
+        delay(300);
+        lcd.print(httpCode);
+        delay(1000);
         Serial.println(payload);
       }
  
@@ -77,25 +104,39 @@ void loop() {
 void connectToWiFi() {
   //Connect to WiFi Network
     Serial.println();
-    Serial.println();
-    Serial.println("Connecting to WiFi");
-    Serial.println("...");
+    Serial.println();/*
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Connecting to WiFi");
+    lcd.clear();
+    lcd.setCursor(0, 1);
+    lcd.print("...");*/
     WiFi.begin(ssid, password);
     int retries = 0;
   while ((WiFi.status() != WL_CONNECTED) && (retries < 15)) {
     retries++;
     delay(500);
-    Serial.print(".");
+    //lcd.print(".");
   }
   if (retries > 14) {
-      Serial.println(F("WiFi connection FAILED"));
+     /* lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print(F("WiFi connection FAILED"));*/
   }
   if (WiFi.status() == WL_CONNECTED) {
-      Serial.println(F("WiFi connected!"));
-      Serial.println("IP address: ");
-      Serial.println(WiFi.localIP());
+      /*lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print(F("WiFi connected!"));
+      delay(300);
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("IP address: ");
+      lcd.setCursor(0, 1);
+      lcd.print(WiFi.localIP());
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("CHUJ");*/
   }
-      Serial.println(F("Setup ready"));
 }
 
 void handle_OnConnect() {
@@ -216,3 +257,10 @@ String SendHTML(float temperature,float humidity, float light, int red, int gree
   ptr +="</html>\n";
   return ptr;
 }
+/*
+void button(void)
+{
+  if(butClick<=4){butClick++;}
+  else{butClick=0;}
+}
+*/
