@@ -260,7 +260,8 @@ String SendHTML(float temperature,float humidity, float light, int red, int gree
 /*
 void button(void)
 {
+  noInterrupts();
   if(butClick<=4){butClick++;}
   else{butClick=0;}
-}
-*/
+  interrupts();
+}*/
