@@ -11,13 +11,13 @@
 #define bluePIN 0//D1
 #define buttonPIN 1
 
-const String endpoint = "http://api.openweathermap.org/data/2.5/weather?q=Krakow,pl&APPID=";
-const String key = "13e6fd15ee63796bcf8f4809fb26832b";
+const String endpoint = "http://api.openweathermap.org/data/2.5/weather?q=Krakow,pl&APPID="; //api for Cracow, find for your city
+const String key = "yourKeyHere";
 
 #define dhtTYPE DHT11
 
-const char *ssid = "UPC913DBEC";
-const char *password = "tC4jruczkpty";
+const char *ssid = "yourWifiNameHere";
+const char *password = "yourPasswordHere";
 
 float temperature;
 float humidity;
@@ -250,7 +250,6 @@ String SendHTML(float temperature,float humidity, float light, int red, int gree
   ptr += green;
   ptr += "<p>BLUE: ";
   ptr += blue;
-  ptr += "<p>kocham Julcie</p>";
   ptr += "<p>by Robert Zubek</p>";
   ptr +="</div>\n";
   ptr +="</body>\n";
