@@ -2,54 +2,103 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPClient.h>
-#include <LiquidCrystal.h>
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
+#include <U8g2lib.h>
+#include <string.h>
+#include <ArduinoJson.h>
 
-#define dhtPIN 2 //D4
-#define fotoPIN A0
-#define redPIN 5//D3
-#define greenPIN 4//D2
-#define bluePIN 0//D1
-#define buttonPIN 1
-
-const String endpoint = "http://api.openweathermap.org/data/2.5/weather?q=Krakow,pl&APPID="; //api for Cracow, find for your city
-const String key = "yourKeyHere";
-
+#define SEALEVELPRESSURE_HPA (1013.25)
 #define dhtTYPE DHT11
 
-const char *ssid = "yourWifiNameHere";
-const char *password = "yourPasswordHere";
+#define dhtPIN 12 //D6
+#define fotoPIN A0
+#define redPIN 14//D5
+#define greenPIN 15//D8
+#define bluePIN 2//D4
+#define switch1 13 //D7
+#define switch2 16 //D0
 
-float temperature;
-float humidity;
-float light;
+const String endpoint = "http://api.openweathermap.org/data/2.5/weather?q=Krakow,pl&APPID="; //api for Cracow
+const String key = "3d314141e44b26727482648506172985";
 
-int redValue = 255;
-int greenValue = 255;
-int blueValue = 255;
+const char *ssid = "UPC913DBEC";
+const char *password = "tC4jruczkpty";
 
-volatile uint8_t butClick;
+static float temperature;
+static float humidity;
+static float light;
+
+static float bmpTemperature;
+static float bmpHumidity;
+static float bmpPressure;
+static float bmpAltitude;
+
+static uint8_t redValue = 255;
+static uint8_t greenValue = 255;
+static uint8_t blueValue = 255;
+
+static uint8_t sw1 = 1;
+static uint8_t sw2 = 1;
+
+static String ondisp;
+static String ondisp2;
+static String ondisp3;
+
+struct Weather {
+    String main;
+    String description;
+    float temperature;
+    float feels_like;
+    int pressure;
+    int humidity;
+    float wind_speed;
+    int cloudiness;
+};
+
 
 DHT dht(dhtPIN, dhtTYPE);
 WiFiClient client;
 HTTPClient http1;
 ESP8266WebServer server(80);   
-LiquidCrystal lcd(16, 14, 12, 13, 15, 3); 
+Adafruit_BME280 bme;
+U8G2_SSD1306_128X32_UNIVISION_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, SCL, SDA);
+
+void parseWeatherJson(const char* json, Weather &weather) {
+    // Zwiększony rozmiar bufora, aby pomieścić większy JSON
+    const size_t capacity = 1024;
+    DynamicJsonDocument doc(capacity);
+
+    DeserializationError error = deserializeJson(doc, json);
+    if (error) {
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return;
+    }
+
+    weather.main = doc["weather"][0]["main"].as<String>();
+    weather.description = doc["weather"][0]["description"].as<String>();
+    weather.temperature = doc["main"]["temp"].as<float>();
+    weather.feels_like = doc["main"]["feels_like"].as<float>();
+    weather.pressure = doc["main"]["pressure"].as<int>();
+    weather.humidity = doc["main"]["humidity"].as<int>();
+    weather.wind_speed = doc["wind"]["speed"].as<float>();
+    weather.cloudiness = doc["clouds"]["all"].as<int>();
+}
+
 
 void setup() {
 
   pinMode(redPIN, OUTPUT);
   pinMode(greenPIN, OUTPUT);
   pinMode(bluePIN, OUTPUT);
-  pinMode(buttonPIN, INPUT_PULLUP);
-
-  //attachInterrupt(digitalPinToInterrupt(buttonPIN), button, FALLING);
-
-  lcd.begin(16,2);
-  
-  
+  pinMode(switch1, INPUT_PULLUP);
+  pinMode(switch2, INPUT_PULLUP);
 
   Serial.begin(9600);
   dht.begin();
+  u8g2.begin();
   connectToWiFi();
   server.on("/", handle_OnConnect);
   server.on("/increaseRed", HTTP_GET, handle_IncreaseRed);
@@ -62,22 +111,24 @@ void setup() {
   server.onNotFound(handle_NotFound);
 
   server.begin();
-  //lcd.setCursor(0, 0);
-  //lcd.print("HTTP server started!");
+  
   delay(300);
-
+  if (!bme.begin(0x76)) { Serial.println("bme280 error");}
+  else{Serial.println("bme280 ok");}
+ 
 }
 
 void loop() {
-  lcd.setCursor(0, 0);
-  lcd.print("IP Address: ");
-  lcd.print(WiFi.localIP()[0]);
-  lcd.print(".");
-  lcd.print(WiFi.localIP()[1]);
-  lcd.print(".");
-  lcd.print(WiFi.localIP()[2]);
-  lcd.print(".");
-  lcd.print(WiFi.localIP()[3]);
+  Weather weather;
+  Serial.println("IP Address: ");
+  Serial.print(WiFi.localIP()[0]);
+  Serial.print(".");
+  Serial.print(WiFi.localIP()[1]);
+  Serial.print(".");
+  Serial.print(WiFi.localIP()[2]);
+  Serial.print(".");
+  Serial.print(WiFi.localIP()[3]);
+  Serial.print("\n");
   server.handleClient();
   http1.begin(client, (endpoint + key).c_str());
   int httpCode = http1.GET();
@@ -85,12 +136,12 @@ void loop() {
  
         String payload = http1.getString();
         Serial.println(httpCode);
-        lcd.clear();
-        lcd.setCursor(0,0);
         delay(300);
-        lcd.print(httpCode);
+        Serial.println(httpCode);
         delay(1000);
         Serial.println(payload);
+        parseWeatherJson(payload.c_str(), weather);
+        delay(1000);
       }
  
     else {
@@ -98,19 +149,40 @@ void loop() {
     }
  
     http1.end(); 
+    
+  sw1=digitalRead(switch1);
+  sw2=digitalRead(switch2);
+    if(digitalRead(switch1)==HIGH){
+      ondisp=weather.main+" Temp: "+String(weather.temperature-272.15)+" Cel.";
+      ondisp2="Wind: "+String(weather.wind_speed)+"m/s Hum.: "+weather.humidity+"%";
+      ondisp3="Press: "+String(weather.pressure)+"hPa Clouds: "+String(weather.cloudiness)+"%";
+      u8g2.firstPage();
+      do {
+      u8g2.setFont(u8g2_font_micro_tr);
+      u8g2.drawStr(0,10,ondisp.c_str());
+      u8g2.drawStr(0,20,ondisp2.c_str());
+      u8g2.drawStr(0,30,ondisp3.c_str());
+      } while ( u8g2.nextPage() ); 
+      }
+    if(digitalRead(switch1)==LOW){
+      ondisp=" Temp: "+String(dht.readTemperature())+" Cel.";
+      ondisp2="Hum.: "+String(dht.readHumidity())+"% Light: "+String(analogRead(fotoPIN));
+      ondisp3="IP: "+String(WiFi.localIP()[0])+"."+String(WiFi.localIP()[1])+"."+String(WiFi.localIP()[2])+"."+String(WiFi.localIP()[3]);
+      u8g2.firstPage();
+      do {
+      u8g2.setFont(u8g2_font_micro_tr);
+      u8g2.drawStr(0,10,ondisp.c_str());
+      u8g2.drawStr(0,20,ondisp2.c_str());
+      u8g2.drawStr(0,30,ondisp3.c_str());
+      } while ( u8g2.nextPage() ); 
+      }
+ 
   
 }
 
 void connectToWiFi() {
-  //Connect to WiFi Network
     Serial.println();
-    Serial.println();/*
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("Connecting to WiFi");
-    lcd.clear();
-    lcd.setCursor(0, 1);
-    lcd.print("...");*/
+    Serial.println();
     WiFi.begin(ssid, password);
     int retries = 0;
   while ((WiFi.status() != WL_CONNECTED) && (retries < 15)) {
@@ -227,10 +299,10 @@ String SendHTML(float temperature,float humidity, float light, int red, int gree
   ptr += "<body>\n";
   ptr += "<div id=\"webpage\">\n";
   ptr += "<h1>KASZTAN Weather Station</h1>\n";
-  ptr += "<p>Temperature: ";
+  ptr += "<p>DHT11 Temperature: ";
   ptr += temperature;
   ptr += "&deg;C</p>";
-  ptr += "<p>Humidity: ";
+  ptr += "<p>DHT11 Humidity: ";
   ptr += humidity;
   ptr += "%</p>";
   ptr += "<p>Light: ";
@@ -256,11 +328,4 @@ String SendHTML(float temperature,float humidity, float light, int red, int gree
   ptr +="</html>\n";
   return ptr;
 }
-/*
-void button(void)
-{
-  noInterrupts();
-  if(butClick<=4){butClick++;}
-  else{butClick=0;}
-  interrupts();
-}*/
+
