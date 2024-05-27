@@ -23,8 +23,8 @@
 const String endpoint = "http://api.openweathermap.org/data/2.5/weather?q=Krakow,pl&APPID="; //api for Cracow
 const String key = "3d314141e44b26727482648506172985";
 
-const char *ssid = "UPC913DBEC";
-const char *password = "tC4jruczkpty";
+const char *ssid = "Robercik uwu";
+const char *password = "123456ok";
 
 static float temperature;
 static float humidity;
@@ -135,13 +135,13 @@ void loop() {
   if (httpCode > 0) { 
  
         String payload = http1.getString();
-        Serial.println(httpCode);
+        //Serial.println(httpCode);
         delay(300);
-        Serial.println(httpCode);
-        delay(1000);
-        Serial.println(payload);
+        //Serial.println(httpCode);
+        //delay(1000);
+        //Serial.println(payload);
         parseWeatherJson(payload.c_str(), weather);
-        delay(1000);
+        //delay(1000);
       }
  
     else {
@@ -220,43 +220,43 @@ void handle_OnConnect() {
 
 void handle_IncreaseRed()
 {
-  if (redValue > 11)
-    redValue-=10;
+  if (redValue > 41)
+    redValue-=40;
   analogWrite(redPIN, redValue);
   server.send(200, "text/html", SendHTML(temperature, humidity, light, redValue, greenValue, blueValue));
 }
 void handle_IncreaseGreen()
 {
-  if (greenValue > 11)
-    greenValue-=10;
+  if (greenValue > 41)
+    greenValue-=40;
   analogWrite(greenPIN, greenValue);
   server.send(200, "text/html", SendHTML(temperature, humidity, light, redValue, greenValue, blueValue));
 }
 void handle_IncreaseBlue()
 {
-  if (blueValue > 11)
-    blueValue-=10;
+  if (blueValue > 41)
+    blueValue-=40;
   analogWrite(bluePIN, blueValue);
   server.send(200, "text/html", SendHTML(temperature, humidity, light, redValue, greenValue, blueValue));
 }
 void handle_DecreaseRed()
 {
-  if (redValue <244)
-    redValue+=10;
+  if (redValue <214)
+    redValue+=40;
   analogWrite(redPIN, redValue);
   server.send(200, "text/html", SendHTML(temperature, humidity, light, redValue, greenValue, blueValue));
 }
 void handle_DecreaseGreen()
 {
-  if (greenValue < 244)
-    greenValue+=10;
+  if (greenValue < 214)
+    greenValue+=40;
   analogWrite(greenPIN, greenValue);
   server.send(200, "text/html", SendHTML(temperature, humidity, light, redValue, greenValue, blueValue));
 }
 void handle_DecreaseBlue()
 {
-  if (blueValue <244)
-    blueValue+=10;
+  if (blueValue <214)
+    blueValue+=40;
   analogWrite(bluePIN, blueValue);
   server.send(200, "text/html", SendHTML(temperature, humidity, light, redValue, greenValue, blueValue));
 }
